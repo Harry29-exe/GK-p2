@@ -9,12 +9,11 @@
     let cube = defaultCube()
     cube = cube.translateZ(1).translateX(-0.5).translateY(-0.2)
 
-    console.log(cube)
     onMount(() => {
         canvas.width = 300;
         canvas.height = 200;
         ctx = canvas.getContext("2d");
-        camera.drawMesh(cube.mesh, ctx)
+        camera.drawMesh(cube, ctx)
     })
 
 

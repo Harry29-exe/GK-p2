@@ -1,10 +1,16 @@
 import {Matrix4x4} from "./structs/Matrix4x4";
-import type {mesh, tris} from "./structs/Structs";
+import type {Mesh} from "./structs/Structs";
 import {ProjMatrix} from "./structs/ProjMatrix";
+import {Vec3d} from "./structs/Vectors";
+
+const identity = Matrix4x4.identity();
 
 export type Ctx = CanvasRenderingContext2D
 export class CameraEngine {
     private cameraInfo: CameraInfo
+    private vCamera = Vec3d.from(1,-0.5,0)
+    private vLookDir = Vec3d.from(-0.5,1,1)
+    private vUp = Vec3d.from(0,1,0)
 
     constructor(width: number, height: number) {
         this.cameraInfo = new CameraInfo(width, height);
@@ -14,14 +20,23 @@ export class CameraEngine {
         ctx.clearRect(0,0,this.cameraInfo.width, this.cameraInfo.height);
     }
 
-    public drawMesh(obj: mesh, ctx: Ctx) {
-        console.log(this.cameraInfo.createProjectionMatrix())
-        // const mesh = this.projectMesh(obj, this.cameraInfo.createProjectionMatrix())
-        const mesh = this.cameraInfo.createProjectionMatrix().projectMesh(obj);
+    public drawMesh(obj: Mesh, ctx: Ctx) {
+        const projMatrix  = this.cameraInfo.createProjectionMatrix();
+        const vTarget = this.vCamera.add(this.vLookDir);
+        const lookAt = Matrix4x4.lookAt(
+            this.vCamera,
+            vTarget,
+            this.vUp
+        )
+        let mesh: Mesh = obj;
+        mesh = mesh.multiplyByMatrix(lookAt)
+        mesh = mesh.multiplyByMatrix(identity)
+        mesh = projMatrix.projectMesh(mesh);
         ctx.strokeStyle = 'black';
 
-        for (let i = 0; i < mesh.length; i++) {
-            const tris = mesh[i]
+
+        for (let i = 0; i < mesh.triangles.length; i++) {
+            const tris = mesh.triangles[i]
             let x = this.scaleXCoord(tris[2].d[0])
             let y = this.scaleYCoord(tris[2].d[1])
 
@@ -31,7 +46,6 @@ export class CameraEngine {
             for (let j = 0; j < 3; j++) {
                 x = this.scaleXCoord(tris[j].d[0])
                 y = this.scaleYCoord(tris[j].d[1])
-                console.log("to: x:", tris[j].d[0],"-", x, " y:",tris[j].d[1],"-", y);
                 ctx.lineTo(x, y)
                 ctx.stroke()
             }
@@ -50,8 +64,8 @@ export class CameraEngine {
 }
 
 class CameraInfo {
-    public fov = Math.PI / 2;
-    public zFar = 1000;
+    public fov = Math.PI/2;
+    public zFar = 100000;
     public zNear = 0.1;
     public width: number;
     public height: number;

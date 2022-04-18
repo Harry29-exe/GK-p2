@@ -1,4 +1,4 @@
-import {emptyTris} from "./Structs";
+import {emptyTris, Mesh} from "./Structs";
 import {Matrix4x4} from "./Matrix4x4";
 import type {mesh, tris} from "./Structs"
 import type {Vec3d} from "./Vectors";
@@ -15,13 +15,13 @@ export class ProjMatrix extends Matrix4x4 {
         ])
     }
 
-    public projectMesh(mesh: mesh): mesh {
+    public projectMesh(mesh: Mesh): Mesh {
         const newMesh = [] as mesh;
-        for (let i = 0; i < mesh.length; i++) {
-            newMesh.push(this.projectTris(mesh[i]))
+        for (let i = 0; i < mesh.triangles.length; i++) {
+            newMesh.push(this.projectTris(mesh.triangles[i]))
         }
 
-        return newMesh
+        return new Mesh(newMesh)
     }
 
     public projectTris(tris: tris): tris {
@@ -36,10 +36,10 @@ export class ProjMatrix extends Matrix4x4 {
     public projectVec(vec: Vec3d): Vec3d {
         const newVec = this.multiplyVec3d(vec)
 
-        if (newVec.d[3]) {
-            for (let i = 0; i < 3; i++) {
-                newVec.d[i] = newVec.d[i] / newVec.d[3];
-            }
+        if (newVec.d[3] != 0) {
+            newVec.x /= newVec.w;
+            newVec.y /= newVec.w;
+            newVec.z /= newVec.w;
         }
 
         return newVec
