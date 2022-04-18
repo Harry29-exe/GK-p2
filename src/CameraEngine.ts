@@ -1,7 +1,6 @@
-import {Matrix4, ProjMatrix} from "./structs/Matrix";
+import {Matrix4x4} from "./structs/Matrix4x4";
 import type {mesh, tris} from "./structs/Structs";
-import type {vec3} from "./structs/Vectors";
-import {emptyTris} from "./structs/Structs";
+import {ProjMatrix} from "./structs/ProjMatrix";
 
 export type Ctx = CanvasRenderingContext2D
 export class CameraEngine {
@@ -23,16 +22,16 @@ export class CameraEngine {
 
         for (let i = 0; i < mesh.length; i++) {
             const tris = mesh[i]
-            let x = this.scaleXCoord(tris[2][0])
-            let y = this.scaleYCoord(tris[2][1])
+            let x = this.scaleXCoord(tris[2].d[0])
+            let y = this.scaleYCoord(tris[2].d[1])
 
             ctx.beginPath()
             ctx.moveTo(x, y)
 
             for (let j = 0; j < 3; j++) {
-                x = this.scaleXCoord(tris[j][0])
-                y = this.scaleYCoord(tris[j][1])
-                console.log("to: x:", tris[j][0],"-", x, " y:",tris[j][1],"-", y);
+                x = this.scaleXCoord(tris[j].d[0])
+                y = this.scaleYCoord(tris[j].d[1])
+                console.log("to: x:", tris[j].d[0],"-", x, " y:",tris[j].d[1],"-", y);
                 ctx.lineTo(x, y)
                 ctx.stroke()
             }
@@ -63,13 +62,10 @@ class CameraInfo {
     }
 
     public createProjectionMatrix(): ProjMatrix {
-        const scaleFactor = 1/Math.tan(this.fov/2);
-        return new ProjMatrix([
-            [(this.height/this.width) * scaleFactor, 0, 0 ,0],
-            [0, scaleFactor, 0, 0],
-            [0, 0, this.zFar / (this.zFar - this.zNear), 1],
-            [0, 0, (-this.zFar - this.zNear) / (this.zFar - this.zNear), 0]
-        ], this.width)
+        return new ProjMatrix(this.fov, this.zFar, this.zNear, this.width, this.height);
     }
+}
+
+class CameraPos {
 
 }

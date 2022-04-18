@@ -7,7 +7,7 @@
     let ctx: CanvasRenderingContext2D;
     const camera = new CameraEngine(300, 200);
     let cube = defaultCube()
-    cube = cube.translateZ(1).translateX(-0.5).translateY(-0.5)
+    cube = cube.translateZ(1).translateX(-0.5).translateY(-0.2)
 
     console.log(cube)
     onMount(() => {

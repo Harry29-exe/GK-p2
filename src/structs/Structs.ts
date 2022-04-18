@@ -1,8 +1,7 @@
-import type {vec3} from "./Vectors";
-import {emptyVec3} from "./Vectors";
+import {Vec3d} from "./Vectors";
 
-export type tris = [vec3, vec3, vec3];
-export const emptyTris = (): tris => [emptyVec3(), emptyVec3(), emptyVec3()]
+export type tris = [Vec3d, Vec3d, Vec3d];
+export const emptyTris = (): tris => [Vec3d.empty(), Vec3d.empty(), Vec3d.empty()]
 
 
 export type mesh = tris[];
@@ -20,7 +19,7 @@ export class Mesh {
             const newTris = emptyTris()
             for (let i = 0; i < 3; i++) {
                 const vec = tris[i]
-                newTris[i] = [vec[0] + x, vec[1], vec[2]]
+                newTris[i] = Vec3d.from(vec.d[0] + x, vec.d[1], vec.d[2])
             }
             newMesh.push(newTris)
         }
@@ -34,7 +33,7 @@ export class Mesh {
             const newTris = emptyTris()
             for (let i = 0; i < 3; i++) {
                 const vec = tris[i]
-                newTris[i] = [vec[0], vec[1] + y, vec[2]]
+                newTris[i] = Vec3d.from(vec.d[0], vec.d[1] + y, vec.d[2])
             }
             newMesh.push(newTris)
         }
@@ -48,7 +47,7 @@ export class Mesh {
             const newTris = emptyTris()
             for (let i = 0; i < 3; i++) {
                 const vec = tris[i]
-                newTris[i] = [vec[0], vec[1], vec[2] + z]
+                newTris[i] = Vec3d.from(vec.d[0], vec.d[1], vec.d[2] + z)
             }
             newMesh.push(newTris)
         }
@@ -60,23 +59,18 @@ export class Mesh {
 
 export const defaultCube = (): Mesh => {
     return new Mesh([
-        [[0,0,0],[0,1,0],[1,1,0]],
-        [[0,0,0],[1,1,0],[1,0,0]],
-
-        [[1,0,0],[1,1,0],[1,1,1]],
-        [[1,0,0],[1,1,1],[1,0,1]],
-
-        [[1,0,1],[1,1,1],[0,1,1]],
-        [[1,0,1],[0,1,1],[0,0,1]],
-
-        [[0,0,1],[0,1,1],[0,1,0]],
-        [[0,0,1],[0,1,0],[0,0,0]],
-
-        [[0,1,0],[0,1,1],[1,1,1]],
-        [[0,1,0],[1,1,1],[1,1,0]],
-
-        [[1,0,1],[0,0,1],[0,0,0]],
-        [[1,0,1],[0,0,0],[1,0,0]],
+        [Vec3d.from(0,0,0),Vec3d.from(0,1,0),Vec3d.from(1,1,0)],
+        [Vec3d.from(0,0,0),Vec3d.from(1,1,0),Vec3d.from(1,0,0)],
+        [Vec3d.from(1,0,0),Vec3d.from(1,1,0),Vec3d.from(1,1,1)],
+        [Vec3d.from(1,0,0),Vec3d.from(1,1,1),Vec3d.from(1,0,1)],
+        [Vec3d.from(1,0,1),Vec3d.from(1,1,1),Vec3d.from(0,1,1)],
+        [Vec3d.from(1,0,1),Vec3d.from(0,1,1),Vec3d.from(0,0,1)],
+        [Vec3d.from(0,0,1),Vec3d.from(0,1,1),Vec3d.from(0,1,0)],
+        [Vec3d.from(0,0,1),Vec3d.from(0,1,0),Vec3d.from(0,0,0)],
+        [Vec3d.from(0,1,0),Vec3d.from(0,1,1),Vec3d.from(1,1,1)],
+        [Vec3d.from(0,1,0),Vec3d.from(1,1,1),Vec3d.from(1,1,0)],
+        [Vec3d.from(1,0,1),Vec3d.from(0,0,1),Vec3d.from(0,0,0)],
+        [Vec3d.from(1,0,1),Vec3d.from(0,0,0),Vec3d.from(1,0,0)],
 
     ])
 }
