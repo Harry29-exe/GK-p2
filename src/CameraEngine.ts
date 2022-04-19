@@ -7,10 +7,8 @@ const identity = Matrix4x4.identity();
 
 export type Ctx = CanvasRenderingContext2D
 export class CameraEngine {
-    private cameraInfo: CameraInfo
-    private vCamera = Vec3d.from(1,-0.5,0)
-    private vLookDir = Vec3d.from(-0.5,1,1)
-    private vUp = Vec3d.from(0,1,0)
+    public readonly cameraInfo: CameraInfo
+    public readonly cameraPos = new CameraPos();
 
     constructor(width: number, height: number) {
         this.cameraInfo = new CameraInfo(width, height);
@@ -22,12 +20,7 @@ export class CameraEngine {
 
     public drawMesh(obj: Mesh, ctx: Ctx) {
         const projMatrix  = this.cameraInfo.createProjectionMatrix();
-        const vTarget = this.vCamera.add(this.vLookDir);
-        const lookAt = Matrix4x4.lookAt(
-            this.vCamera,
-            vTarget,
-            this.vUp
-        )
+        const lookAt = this.cameraPos.createLookAtMatrix()
         let mesh: Mesh = obj;
         mesh = mesh.multiplyByMatrix(lookAt)
         mesh = mesh.multiplyByMatrix(identity)
@@ -65,6 +58,7 @@ export class CameraEngine {
 
 class CameraInfo {
     public fov = Math.PI/2;
+    private fovChange = Math.PI / 32;
     public zFar = 100000;
     public zNear = 0.1;
     public width: number;
@@ -78,8 +72,81 @@ class CameraInfo {
     public createProjectionMatrix(): ProjMatrix {
         return new ProjMatrix(this.fov, this.zFar, this.zNear, this.width, this.height);
     }
+
+    public posZoom() {
+        this.fov -= this.fovChange
+    }
+
+    public negZoom() {
+        this.fov += this.fovChange
+    }
+
 }
 
 class CameraPos {
+    //camera position
+    private vCamera = Vec3d.from(0,0,0)
+    //normalized look direction
+    private vLookDir = Vec3d.from(0,0,1)
+    //up vector
+    private vUp = Vec3d.from(0,1,0)
+    private moveFactor = 0.1;
+    private rotateFactor = Math.PI / 16;
+    private rotX = 0;
+    private rotY = 0;
+    private rotZ = 0;
+
+    public createLookAtMatrix(): Matrix4x4 {
+        const vTarget = this.vCamera.add(this.vLookDir);
+        return Matrix4x4.lookAt(this.vCamera, vTarget, this.vUp);
+    }
+
+    public moveForward() {
+        const vForward = this.vLookDir.multiply(this.moveFactor)
+        this.vCamera = this.vCamera.add(vForward);
+    }
+
+    public moveBackward() {
+        const vForward = this.vLookDir.multiply(this.moveFactor)
+        this.vCamera = this.vCamera.subtract(vForward);
+    }
+
+    public rotatePosX() {
+        console.log(this.vLookDir)
+        this.vLookDir = Matrix4x4
+            .rotationX(this.rotateFactor)
+            .multiplyVec3d(this.vLookDir);
+        console.log(this.vLookDir)
+    }
+
+    public rotateNegX() {
+        this.vLookDir = Matrix4x4
+            .rotationX(-this.rotateFactor)
+            .multiplyVec3d(this.vLookDir);
+    }
+
+    public rotatePosY() {
+        this.vLookDir = Matrix4x4
+            .rotationY(this.rotateFactor)
+            .multiplyVec3d(this.vLookDir)
+    }
+
+    public rotateNegY() {
+        this.vLookDir = Matrix4x4
+            .rotationY(-this.rotateFactor)
+            .multiplyVec3d(this.vLookDir)
+    }
+
+    public rotatePosZ() {
+        this.vLookDir = Matrix4x4
+            .rotationZ(this.rotateFactor)
+            .multiplyVec3d(this.vLookDir)
+    }
+
+    public rotateNegZ() {
+        this.vLookDir = Matrix4x4
+            .rotationZ(-this.rotateFactor)
+            .multiplyVec3d(this.vLookDir)
+    }
 
 }

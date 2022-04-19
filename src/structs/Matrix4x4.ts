@@ -19,10 +19,8 @@ export class Matrix4x4 {
     // up – vec3 pointing up
     public static lookAt(pos: Vec3d, target: Vec3d, up: Vec3d): Matrix4x4 {
         const newForward = target.subtract(pos).normalise();
-        console.log("new forward:",newForward)
         const temp = newForward.multiply(up.dotProduct(newForward))
         const newUp = up.subtract(temp).normalise();
-        console.log("newUp", newUp)
         const newRight = newUp.crossProduct(newForward);
         // console.log(newRight)
 
@@ -32,7 +30,6 @@ export class Matrix4x4 {
             newForward.x, newForward.y, newForward.z, 0,
             pos.x, pos.y, pos.z, 1
         ])
-        console.log("Point at", pointAtMatrix)
 
         return pointAtMatrix.quickInverse();
     }
@@ -41,6 +38,39 @@ export class Matrix4x4 {
         const matrix = Matrix4x4.empty()
         matrix.rows[0] = 1;
         matrix.rows[1*4+1] = 1;
+        matrix.rows[2*4+2] = 1;
+        matrix.rows[3*4+3] = 1;
+        return matrix;
+    }
+
+    public static rotationX(angleRad: number): Matrix4x4 {
+        const matrix = Matrix4x4.empty();
+        matrix.rows[0] = 1;
+        matrix.rows[1*4+1] = Math.cos(angleRad);
+        matrix.rows[1*4+2] = Math.sin(angleRad);
+        matrix.rows[2*4+1] = -Math.sin(angleRad);
+        matrix.rows[2*4+2] = Math.cos(angleRad);
+        matrix.rows[3*4+3] = 1;
+        return matrix;
+    }
+
+    public static rotationY(angleRad: number): Matrix4x4 {
+        const matrix = Matrix4x4.empty();
+        matrix.rows[0*4+0] = Math.cos(angleRad);
+        matrix.rows[0*4+2] = Math.sin(angleRad);
+        matrix.rows[2*4+0] = -Math.sin(angleRad);
+        matrix.rows[1*4+1] = 1;
+        matrix.rows[2*4+2] = Math.cos(angleRad);
+        matrix.rows[3*4+3] = 1;
+        return matrix;
+    }
+
+    public static rotationZ(angleRad: number): Matrix4x4 {
+        const matrix = Matrix4x4.empty();
+        matrix.rows[0] = Math.cos(angleRad);
+        matrix.rows[0*4+1] = Math.sin(angleRad);
+        matrix.rows[1*4+0] = -Math.sin(angleRad);
+        matrix.rows[1*4+1] = Math.cos(angleRad);
         matrix.rows[2*4+2] = 1;
         matrix.rows[3*4+3] = 1;
         return matrix;
@@ -70,30 +100,7 @@ export class Matrix4x4 {
         return sum;
     }
 
-    // //works only for rotation/translation matrices
-    // private quickInverse(): Matrix4x4 {
-    //     const matrix = Matrix4x4.empty();
-    //     matrix.rows[0*4+0] =   this.rows[0*4+0];  matrix.rows[0*4+1] = this.rows[1*4+0];  matrix.rows[0*4+2] = this.rows[2*4+0];  matrix.rows[0*4+3] = 0;
-    //     matrix.rows[1*4+0] =   this.rows[0*4+1];  matrix.rows[1*4+1] = this.rows[1*4+1];  matrix.rows[1*4+2] = this.rows[2*4+1];  matrix.rows[1*4+3] = 0;
-    //     matrix.rows[2*4+0] =   this.rows[0*4+2];  matrix.rows[2*4+1] = this.rows[1*4+2];  matrix.rows[2*4+2] = this.rows[2*4+2];  matrix.rows[2*4+3] = 0;
-    //     matrix.rows[3*4+0] = -(this.rows[3*4+0] * matrix.rows[0*4+0] + this.rows[3*4+1] * matrix.rows[1*4+0] + this.rows[3*4+2] * matrix.rows[2*4+0]);
-    //     matrix.rows[3*4+1] = -(this.rows[3*4+0] * matrix.rows[0*4+1] + this.rows[3*4+1] * matrix.rows[1*4+1] + this.rows[3*4+2] * matrix.rows[2*4+1]);
-    //     matrix.rows[3*4+2] = -(this.rows[3*4+0] * matrix.rows[0*4+2] + this.rows[3*4+1] * matrix.rows[1*4+2] + this.rows[3*4+2] * matrix.rows[2*4+2]);
-    //     matrix.rows[3*4+3] = 1;
-    //     return matrix;
-    // }
-
-    // private quickInverse(): Matrix4x4 {
-    //     const matrix = Matrix4x4.empty();
-    //     matrix.rows[0+4*0] =   this.rows[0+4*0];  matrix.rows[0+4*1] = this.rows[1+4*0];  matrix.rows[0+4*2] = this.rows[2+4*0];  matrix.rows[0+4*3] = 0;
-    //     matrix.rows[1+4*0] =   this.rows[0+4*1];  matrix.rows[1+4*1] = this.rows[1+4*1];  matrix.rows[1+4*2] = this.rows[2+4*1];  matrix.rows[1+4*3] = 0;
-    //     matrix.rows[2+4*0] =   this.rows[0+4*2];  matrix.rows[2+4*1] = this.rows[1+4*2];  matrix.rows[2+4*2] = this.rows[2+4*2];  matrix.rows[2+4*3] = 0;
-    //     matrix.rows[3+4*0] = -(this.rows[3+4*0] * matrix.rows[0+4*0] + this.rows[3+4*1] * matrix.rows[1+4*0] + this.rows[3+4*2] * matrix.rows[2+4*0]);
-    //     matrix.rows[3+4*1] = -(this.rows[3+4*0] * matrix.rows[0+4*1] + this.rows[3+4*1] * matrix.rows[1+4*1] + this.rows[3+4*2] * matrix.rows[2+4*1]);
-    //     matrix.rows[3+4*2] = -(this.rows[3+4*0] * matrix.rows[0+4*2] + this.rows[3+4*1] * matrix.rows[1+4*2] + this.rows[3+4*2] * matrix.rows[2+4*2]);
-    //     matrix.rows[3+4*3] = 1;
-    //     return matrix;
-    // }
+    //works only for rotation/translation matrices
     private quickInverse(): Matrix4x4 {
         const matrix = Matrix4x4.empty();
         matrix.rows[0*4+0] = this.rows[0*4+0];
@@ -113,6 +120,14 @@ export class Matrix4x4 {
         matrix.rows[3*4+2] = -(this.rows[3*4+0] * matrix.rows[0*4+2] + this.rows[3*4+1] * matrix.rows[1*4+2] + this.rows[3*4+2] * matrix.rows[2*4+2]);
         matrix.rows[3*4+3] = 1.0;
         return matrix;
+    }
+
+    public getV(x: number, y: number): number {
+        return this.rows[x*4+y]
+    }
+
+    public setV(x: number, y: number, value: number){
+        this.rows[x*4+y] = value;
     }
 
 }
