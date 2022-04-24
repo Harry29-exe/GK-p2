@@ -24,78 +24,42 @@
         camera.drawMesh(cube, ctx);
     }
 
+    const moveActions: [string, () => void][] = [
+        ["Forward", () => camera.cameraPos.moveForward()],
+        ["Backward", () => camera.cameraPos.moveBackward()],
+        ["Up", () => camera.cameraPos.moveUp()],
+        ["Down", () => camera.cameraPos.moveDown()],
+        ["Left", () => camera.cameraPos.moveLeft()],
+        ["Right", () => camera.cameraPos.moveRight()],
+    ]
 
+    const rotateActions: [string, () => void][] = [
+        ["Rotate X", () => camera.cameraPos.rotatePosX()],
+        ["Rotate -X", () => camera.cameraPos.rotateNegX()],
+        ["Rotate Y", () => camera.cameraPos.rotatePosY()],
+        ["Rotate -Y", () => camera.cameraPos.rotateNegY()],
+        ["Rotate Z", () => camera.cameraPos.rotatePosZ()],
+        ["Rotate -Z", () => camera.cameraPos.rotateNegZ()],
+    ]
 </script>
 
-<div style="border: 3px black solid">
-<canvas id="camera_canvas" bind:this={canvas}></canvas>
-</div>
 
-<button on:click={() => {
-    camera.cameraPos.moveForward();
-    update()}}
->
-    Forward
-</button>
-
-<button on:click={() => {
-    camera.cameraPos.moveBackward();
-    update()
-}}>Backward
-</button>
-
+<canvas id="camera_canvas" bind:this={canvas}
+        style="border: 3px black solid"></canvas>
 <br/>
-<button on:click={() => {
-    camera.cameraPos.rotatePosX();
-    update()
-}}
->
-    Rotate X
+
+
+{#each moveActions as action}
+<button on:click={() => {action[1](); update()}}>
+    {action[0]}
 </button>
-
-<button on:click={() => {
-    camera.cameraPos.rotateNegX();
-    update()
-}}
->
-    Rotate -X
-</button>
-
-
+{/each}
 <br/>
-<button on:click={() => {
-    camera.cameraPos.rotatePosY();
-    update()
-}}
->
-    Rotate Y
-</button>
-
-<button on:click={() => {
-    camera.cameraPos.rotateNegY();
-    update()
-}}
->
-    Rotate -Y
-</button>
-
-
-<br/>
-<button on:click={() => {
-    camera.cameraPos.rotatePosZ();
-    update()
-}} disabled={true}
->
-    Rotate Z
-</button>
-
-<button on:click={() => {
-    camera.cameraPos.rotateNegZ();
-    update()
-}} disabled={true}
->
-    Rotate -Z
-</button>
+{#each rotateActions as action}
+    <button on:click={() => {action[1](); update()}}>
+        {action[0]}
+    </button>
+{/each}
 
 <br/>
 <button on:click={() => {
@@ -123,3 +87,11 @@
 >
     Reset
 </button>
+
+
+<style>
+    button {
+        width: 100px;
+        height: 30px;
+    }
+</style>

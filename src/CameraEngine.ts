@@ -98,7 +98,8 @@ class CameraPos {
 
     public createLookAtMatrix(): Matrix4x4 {
         const vTarget = this.vCamera.add(this.vTarget());
-        return Matrix4x4.lookAt(this.vCamera, vTarget, this.vUp);
+        return Matrix4x4.lookAt(this.vCamera, vTarget, this.vUp)
+            .multiply(Matrix4x4.rotationZ(this.rotZ));
     }
 
     public moveForward() {
@@ -111,65 +112,65 @@ class CameraPos {
         this.vCamera = this.vCamera.subtract(vForward);
     }
 
+    public moveLeft() {
+        const vForward = Matrix4x4.rotationY(this.rotY + Math.PI/2)
+            .multiplyVec3d(this.vLookDir)
+            .multiply(this.moveFactor)
+
+        this.vCamera = this.vCamera.add(vForward)
+    }
+
+    public moveRight() {
+        const vForward = Matrix4x4.rotationY(this.rotY + Math.PI/2)
+            .multiplyVec3d(this.vLookDir)
+            .multiply(this.moveFactor)
+
+        this.vCamera = this.vCamera.subtract(vForward)
+    }
+
+    public moveUp() {
+        const vMove = this.vUp.multiply(this.moveFactor)
+
+        this.vCamera = this.vCamera.subtract(vMove)
+    }
+
+    public moveDown() {
+        const vMove = this.vUp.multiply(this.moveFactor)
+
+        this.vCamera = this.vCamera.add(vMove)
+    }
+
     public rotatePosX() {
         this.rotX += this.rotateFactor;
-        // this.vLookDir = Matrix4x4
-        //     .rotationX(this.rotateFactor)
-        //     .multiplyVec3d(this.vLookDir);
     }
 
     public rotateNegX() {
         this.rotX -= this.rotateFactor;
-        // this.vLookDir = Matrix4x4
-        //     .rotationX(-this.rotateFactor)
-        //     .multiplyVec3d(this.vLookDir);
     }
 
     public rotatePosY() {
         this.rotY += this.rotateFactor;
-
-        // this.vLookDir = Matrix4x4
-        //     .rotationY(this.rotateFactor)
-        //     .multiplyVec3d(this.vLookDir)
     }
 
     public rotateNegY() {
         this.rotY -= this.rotateFactor;
-
-        // this.vLookDir = Matrix4x4
-        //     .rotationY(-this.rotateFactor)
-        //     .multiplyVec3d(this.vLookDir)
     }
 
     public rotatePosZ() {
         this.rotZ += this.rotateFactor;
-
-        // this.vLookDir = Matrix4x4
-        //     .rotationZ(this.rotateFactor)
-        //     .multiplyVec3d(this.vLookDir)
     }
 
     public rotateNegZ() {
         this.rotZ -= this.rotateFactor;
-
-        // this.vLookDir = Matrix4x4
-        //     .rotationZ(-this.rotateFactor)
-        //     .multiplyVec3d(this.vLookDir)
     }
 
     private vTarget(): Vec3d {
         let vTarget = this.vLookDir;
-        // vTarget = Matrix4x4
-        //     .rotationZ(this.rotZ)
-        //     .multiplyVec3d(vTarget)
-        vTarget = Matrix4x4
-            .rotationY(this.rotY)
+
+
+        vTarget = Matrix4x4.rotationX(this.rotX).
+            multiply(Matrix4x4.rotationY(this.rotY))
             .multiplyVec3d(vTarget)
-        vTarget = Matrix4x4
-            .rotationX(this.rotX)
-            .multiplyVec3d(vTarget);
-
-
 
         return vTarget
     }

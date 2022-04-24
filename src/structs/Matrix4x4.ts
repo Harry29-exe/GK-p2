@@ -58,8 +58,8 @@ export class Matrix4x4 {
         const matrix = Matrix4x4.empty();
         matrix.rows[0*4+0] = Math.cos(angleRad);
         matrix.rows[0*4+2] = Math.sin(angleRad);
-        matrix.rows[2*4+0] = -Math.sin(angleRad);
         matrix.rows[1*4+1] = 1;
+        matrix.rows[2*4+0] = -Math.sin(angleRad);
         matrix.rows[2*4+2] = Math.cos(angleRad);
         matrix.rows[3*4+3] = 1;
         return matrix;
@@ -120,6 +120,19 @@ export class Matrix4x4 {
         matrix.rows[3*4+2] = -(this.rows[3*4+0] * matrix.rows[0*4+2] + this.rows[3*4+1] * matrix.rows[1*4+2] + this.rows[3*4+2] * matrix.rows[2*4+2]);
         matrix.rows[3*4+3] = 1.0;
         return matrix;
+    }
+
+    public multiply(matrix: Matrix4x4): Matrix4x4 {
+        let newMatrix = Matrix4x4.empty()
+        for (let x = 0; x < 4; x++) {
+            for (let y = 0; y < 4; y++) {
+                for (let i = 0; i < 4; i++) {
+                    newMatrix.rows[x*4+y] += this.rows[x*4+i] * matrix.rows[i*4+y]
+                }
+            }
+        }
+
+        return newMatrix
     }
 
     public getV(x: number, y: number): number {
