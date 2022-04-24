@@ -59,7 +59,7 @@ export class CameraEngine {
             }
             ctx.fill()
 
-            ctx.strokeStyle = "white"
+            ctx.strokeStyle = "teal"
             ctx.beginPath()
             ctx.moveTo(x, y)
 
