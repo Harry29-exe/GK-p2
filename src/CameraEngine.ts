@@ -2,6 +2,7 @@ import {Matrix4x4} from "./structs/Matrix4x4";
 import {Mesh} from "./structs/Mesh";
 import {ProjMatrix} from "./structs/ProjMatrix";
 import {Vec3d} from "./structs/Vectors";
+import {Tris} from "./structs/Tris";
 
 const identity = Matrix4x4.identity();
 
@@ -10,12 +11,15 @@ export class CameraEngine {
     public readonly cameraInfo: CameraInfo
     public readonly cameraPos = new CameraPos();
 
+    public readonly lightPos: Vec3d = Vec3d.from(-0.5,-0.3,-0.8)
+
     constructor(width: number, height: number) {
         this.cameraInfo = new CameraInfo(width, height);
     }
 
     public clear(ctx: Ctx) {
-        ctx.clearRect(0,0,this.cameraInfo.width, this.cameraInfo.height);
+        ctx.fillStyle = 'black'
+        ctx.fillRect(0,0,this.cameraInfo.width, this.cameraInfo.height);
     }
 
     public drawMesh(mesh: Mesh, ctx: Ctx) {
@@ -32,25 +36,25 @@ export class CameraEngine {
         meshToRender.triangles.sort((t1, t2) => {
             return t2.avgDistanceToCamera(cameraPos) - t1.avgDistanceToCamera(cameraPos)
         })
-
-        const projMatrix  = this.cameraInfo.createProjectionMatrix();
-        const lookAt = this.cameraPos.createLookAtMatrix()
-
-        meshToRender = meshToRender.multiplyByMatrix(lookAt)
-        meshToRender = meshToRender.multiplyByMatrix(identity)
-        meshToRender = projMatrix.projectMesh(meshToRender);
-        ctx.strokeStyle = 'black';
-
-
+        const projector = this.projector()
 
         for (let i = 0; i < meshToRender.triangles.length; i++) {
+            let tris = meshToRender.triangles[i]
 
-            const tris = meshToRender.triangles[i]
+            let color = 255;
+            let trisNormal = tris.calcNormal()
+            let lightFactor = trisNormal.normalise().dotProduct(this.lightPos.normalise())
+            color *= Math.sin(lightFactor * Math.PI)
+            console.log(lightFactor)
+
+            tris = projector(tris)
+
             let x = this.scaleXCoord(tris.vertexes[2].d[0])
             let y = this.scaleYCoord(tris.vertexes[2].d[1])
 
             ctx.beginPath()
             ctx.moveTo(x, y)
+            ctx.fillStyle = `rgba(${color}, ${color},${color}, 1)`
 
             for (let j = 0; j < 3; j++) {
                 x = this.scaleXCoord(tris.vertexes[j].d[0])
@@ -59,7 +63,7 @@ export class CameraEngine {
             }
             ctx.fill()
 
-            ctx.strokeStyle = "teal"
+            ctx.strokeStyle = `pink`
             ctx.beginPath()
             ctx.moveTo(x, y)
 
@@ -69,6 +73,21 @@ export class CameraEngine {
                 ctx.lineTo(x, y)
             }
             ctx.stroke()
+        }
+    }
+
+    private projector(): (tris: Tris) => Tris {
+        const projMatrix  = this.cameraInfo.createProjectionMatrix();
+        const lookAt = this.cameraPos.createLookAtMatrix()
+
+        return (tris: Tris): Tris => {
+            let projTris = Tris.empty()
+            for (let i = 0; i < 3; i++) {
+                let temp = identity.multiplyVec3d(tris.vertexes[i])
+                temp = lookAt.multiplyVec3d(temp)
+                projTris.vertexes[i] = projMatrix.projectVec(temp)
+            }
+            return projTris
         }
     }
 

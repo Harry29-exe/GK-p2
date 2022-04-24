@@ -1,7 +1,8 @@
 <script lang="ts">
     import {CameraEngine} from "./CameraEngine";
     import {onMount} from "svelte";
-    import {defaultCube, Mesh} from "./structs/Mesh";
+    import {defaultCube, defaultPlain, Mesh} from "./structs/Mesh";
+    import {Tris} from "./structs/Tris";
 
     const width = 1200;
     const height = 500;
@@ -11,17 +12,28 @@
     let camera = new CameraEngine(width, height);
     let scene: Mesh = new Mesh([]);
     let cube1 = defaultCube()
-    cube1 = cube1.translateZ(2).translateX(-0.5).translateY(0)
+        .translateZ(2)
+        .translateX(-0.5)
+
     let cube2 = defaultCube()
-    cube2 = cube2.translateZ(4).translateX(-0.5).translateY(0)
+        .rotateX(Math.PI/4)
+        .translateZ(4)
+        .translateX(-0.5)
+
+    let plain = defaultPlain()
+        .translateX(-3)
+        .translateZ(3)
+        .translateY(1.1)
 
     scene.addMesh(cube1);
     scene.addMesh(cube2);
+    scene.addMesh(plain)
 
     onMount(() => {
         canvas.width = width;
         canvas.height = height;
         ctx = canvas.getContext("2d");
+        camera.clear(ctx);
         camera.drawMesh(cube1, ctx)
     })
 

@@ -1,5 +1,5 @@
 import {Vec3d} from "./Vectors";
-import type {Matrix4x4} from "./Matrix4x4";
+import {Matrix4x4} from "./Matrix4x4";
 import {Tris} from "./Tris";
 
 
@@ -76,6 +76,20 @@ export class Mesh {
         return new Mesh(newMesh);
     }
 
+    public rotateX(rad: number): Mesh {
+        const newMesh = [] as Tris[]
+        const matrix = Matrix4x4.rotationX(rad)
+        for (let tris of this.triangles) {
+            let newTris = Tris.empty();
+            for (let i = 0; i < 3; i++) {
+                newTris.vertexes[i] = matrix.multiplyVec3d(tris.vertexes[i])
+            }
+            newMesh.push(newTris)
+        }
+
+        return new Mesh(newMesh)
+    }
+
 }
 
 export const defaultCube = (): Mesh => {
@@ -92,7 +106,12 @@ export const defaultCube = (): Mesh => {
         Tris.from(Vec3d.from(0,1,0),Vec3d.from(1,1,1),Vec3d.from(1,1,0)),
         Tris.from(Vec3d.from(1,0,1),Vec3d.from(0,0,1),Vec3d.from(0,0,0)),
         Tris.from(Vec3d.from(1,0,1),Vec3d.from(0,0,0),Vec3d.from(1,0,0)),
-
     ])
 }
 
+export const defaultPlain = (): Mesh => {
+    return new Mesh([
+        Tris.from(Vec3d.from(6,0,6),Vec3d.from(0,0,6),Vec3d.from(0,0,0)),
+        Tris.from(Vec3d.from(6,0,6),Vec3d.from(0,0,0),Vec3d.from(6,0,0)),
+    ])
+}
