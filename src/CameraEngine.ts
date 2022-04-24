@@ -1,5 +1,5 @@
 import {Matrix4x4} from "./structs/Matrix4x4";
-import type {Mesh} from "./structs/Structs";
+import {Mesh} from "./structs/Mesh";
 import {ProjMatrix} from "./structs/ProjMatrix";
 import {Vec3d} from "./structs/Vectors";
 
@@ -18,27 +18,43 @@ export class CameraEngine {
         ctx.clearRect(0,0,this.cameraInfo.width, this.cameraInfo.height);
     }
 
-    public drawMesh(obj: Mesh, ctx: Ctx) {
+    public drawMesh(mesh: Mesh, ctx: Ctx) {
+        let cameraPos = this.cameraPos.cameraPos
+        let meshToRender = new Mesh([])
+        for (let i = 0; i < mesh.triangles.length; i++) {
+            let tris = mesh.triangles[i]
+            let t = tris.p1.subtract(cameraPos)
+            let dotProduct = t.dotProduct(tris.calcNormal())
+            if (dotProduct < 0) {
+                meshToRender.add(tris)
+            }
+        }
+        meshToRender.triangles.sort((t1, t2) => {
+            return t1.avgDistanceToCamera(cameraPos) - t2.avgDistanceToCamera(cameraPos)
+        })
+
         const projMatrix  = this.cameraInfo.createProjectionMatrix();
         const lookAt = this.cameraPos.createLookAtMatrix()
-        let mesh: Mesh = obj;
-        mesh = mesh.multiplyByMatrix(lookAt)
-        mesh = mesh.multiplyByMatrix(identity)
-        mesh = projMatrix.projectMesh(mesh);
+
+        meshToRender = meshToRender.multiplyByMatrix(lookAt)
+        meshToRender = meshToRender.multiplyByMatrix(identity)
+        meshToRender = projMatrix.projectMesh(meshToRender);
         ctx.strokeStyle = 'black';
 
 
-        for (let i = 0; i < mesh.triangles.length; i++) {
-            const tris = mesh.triangles[i]
-            let x = this.scaleXCoord(tris[2].d[0])
-            let y = this.scaleYCoord(tris[2].d[1])
+
+        for (let i = 0; i < meshToRender.triangles.length; i++) {
+
+            const tris = meshToRender.triangles[i]
+            let x = this.scaleXCoord(tris.vertexes[2].d[0])
+            let y = this.scaleYCoord(tris.vertexes[2].d[1])
 
             ctx.beginPath()
             ctx.moveTo(x, y)
 
             for (let j = 0; j < 3; j++) {
-                x = this.scaleXCoord(tris[j].d[0])
-                y = this.scaleYCoord(tris[j].d[1])
+                x = this.scaleXCoord(tris.vertexes[j].d[0])
+                y = this.scaleYCoord(tris.vertexes[j].d[1])
                 ctx.lineTo(x, y)
                 ctx.stroke()
             }
@@ -173,6 +189,10 @@ class CameraPos {
             .multiplyVec3d(vTarget)
 
         return vTarget
+    }
+
+    public get cameraPos(): Vec3d {
+        return this.vCamera.multiply(1)
     }
 
 }

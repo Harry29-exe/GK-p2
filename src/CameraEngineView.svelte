@@ -1,7 +1,7 @@
 <script lang="ts">
     import {CameraEngine} from "./CameraEngine";
     import {onMount} from "svelte";
-    import {defaultCube} from "./structs/Structs";
+    import {defaultCube} from "./structs/Mesh";
 
     const width = 300;
     const height = 200;
