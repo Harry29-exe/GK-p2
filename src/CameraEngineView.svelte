@@ -3,8 +3,8 @@
     import {onMount} from "svelte";
     import {defaultCube, Mesh} from "./structs/Mesh";
 
-    const width = 300;
-    const height = 200;
+    const width = 1200;
+    const height = 500;
     let canvas: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D;
 
@@ -19,8 +19,8 @@
     scene.addMesh(cube2);
 
     onMount(() => {
-        canvas.width = 300;
-        canvas.height = 200;
+        canvas.width = width;
+        canvas.height = height;
         ctx = canvas.getContext("2d");
         camera.drawMesh(cube1, ctx)
     })
@@ -97,7 +97,7 @@
 
 <style>
     button {
-        width: 100px;
-        height: 30px;
+        width: 200px;
+        height: 50px;
     }
 </style>

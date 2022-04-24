@@ -30,7 +30,7 @@ export class CameraEngine {
             }
         }
         meshToRender.triangles.sort((t1, t2) => {
-            return t1.avgDistanceToCamera(cameraPos) - t2.avgDistanceToCamera(cameraPos)
+            return t2.avgDistanceToCamera(cameraPos) - t1.avgDistanceToCamera(cameraPos)
         })
 
         const projMatrix  = this.cameraInfo.createProjectionMatrix();
@@ -56,8 +56,19 @@ export class CameraEngine {
                 x = this.scaleXCoord(tris.vertexes[j].d[0])
                 y = this.scaleYCoord(tris.vertexes[j].d[1])
                 ctx.lineTo(x, y)
-                ctx.stroke()
             }
+            ctx.fill()
+
+            ctx.strokeStyle = "white"
+            ctx.beginPath()
+            ctx.moveTo(x, y)
+
+            for (let j = 0; j < 3; j++) {
+                x = this.scaleXCoord(tris.vertexes[j].d[0])
+                y = this.scaleYCoord(tris.vertexes[j].d[1])
+                ctx.lineTo(x, y)
+            }
+            ctx.stroke()
         }
     }
 
