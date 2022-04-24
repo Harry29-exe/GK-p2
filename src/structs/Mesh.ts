@@ -14,6 +14,12 @@ export class Mesh {
         this.triangles.push(tris)
     }
 
+    public addMesh(mesh: Mesh) {
+        for (let i = 0; i < mesh.triangles.length; i++) {
+            this.triangles.push(mesh.triangles[i])
+        }
+    }
+
     public multiplyByMatrix(matrix: Matrix4x4): Mesh {
         const newMesh = [];
         for (let i = 0; i < this.triangles.length; i++) {

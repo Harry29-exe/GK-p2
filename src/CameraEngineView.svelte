@@ -1,7 +1,7 @@
 <script lang="ts">
     import {CameraEngine} from "./CameraEngine";
     import {onMount} from "svelte";
-    import {defaultCube} from "./structs/Mesh";
+    import {defaultCube, Mesh} from "./structs/Mesh";
 
     const width = 300;
     const height = 200;
@@ -9,19 +9,25 @@
     let ctx: CanvasRenderingContext2D;
 
     let camera = new CameraEngine(width, height);
-    let cube = defaultCube()
-    cube = cube.translateZ(2).translateX(-0.5).translateY(0)
+    let scene: Mesh = new Mesh([]);
+    let cube1 = defaultCube()
+    cube1 = cube1.translateZ(2).translateX(-0.5).translateY(0)
+    let cube2 = defaultCube()
+    cube2 = cube2.translateZ(4).translateX(-0.5).translateY(0)
+
+    scene.addMesh(cube1);
+    scene.addMesh(cube2);
 
     onMount(() => {
         canvas.width = 300;
         canvas.height = 200;
         ctx = canvas.getContext("2d");
-        camera.drawMesh(cube, ctx)
+        camera.drawMesh(cube1, ctx)
     })
 
     const update = () => {
         camera.clear(ctx);
-        camera.drawMesh(cube, ctx);
+        camera.drawMesh(scene, ctx);
     }
 
     const moveActions: [string, () => void][] = [
