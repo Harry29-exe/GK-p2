@@ -4,8 +4,8 @@
     import {defaultCube, defaultPlain, Mesh, texturedCube} from "./structs/Mesh";
     import {Tris} from "./structs/Tris";
 
-    const width = 200;
-    const height = 120;
+    const width = 400;
+    const height = 320;
     let canvas: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D;
 
@@ -60,7 +60,8 @@
         ["Rotate -Z", () => camera.cameraPos.rotateNegZ()],
     ]
 
-    const canvasSize = `height: ${height*2}px; width: ${width*2}px;`
+    // const canvasSize = `height: ${height*2}px; width: ${width*2}px;`
+    const canvasSize = ""
 </script>
 
 
