@@ -9,11 +9,28 @@ const identity = Matrix4x4.identity();
 const texture = new Texture(new Uint8ClampedArray(
     [
         255,   0,   0,
+        255,   0,   0,
+        255,   0,   0,
+        255,   0,   0,
+
           0, 255,   0,
+          0, 255,   0,
+          0, 255,   0,
+          0, 255,   0,
+
+
           0,   0, 255,
+          0,   0, 255,
+          0,   0, 255,
+          0,   0, 255,
+
+        255, 255, 255,
+        255, 255, 255,
+        255, 255, 255,
         255, 255, 255,
 
-    ]), 2, 2
+
+    ]), 4, 4
 )
 
 export type Ctx = CanvasRenderingContext2D
@@ -56,8 +73,8 @@ export class CameraEngine {
 
         // initialize projection function
         this.initProjector()
-        // draw tris to screen
-        let imageData = this.ctx.getImageData(0,0,this.cameraInfo.width, this.cameraInfo.height)
+
+        // draw remaining tris
         for (let i = 0; i < meshToRender.triangles.length; i++) {
             this.draw(meshToRender.triangles[i])
         }
@@ -85,6 +102,7 @@ export class CameraEngine {
                 let x3d = this.xTo3dSpace(x)
                 let y3d = this.yTo3dSpace(y)
                 if (pointChecker(x3d, y3d)) {
+                    // debugger
                     let texCoord = tris.getTextureCoords(x3d, y3d)
                     let color = texture.getPx(texCoord.x, texCoord.y)
                     let data = this.ctx.createImageData(1,1)
