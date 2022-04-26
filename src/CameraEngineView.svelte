@@ -4,8 +4,8 @@
     import {defaultCube, defaultPlain, Mesh, texturedCube} from "./structs/Mesh";
     import {Tris} from "./structs/Tris";
 
-    const width = 500;
-    const height = 300;
+    const width = 200;
+    const height = 120;
     let canvas: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D;
 
@@ -15,19 +15,19 @@
         .translateZ(2)
         .translateX(-0.5)
 
-    // let cube2 = defaultCube()
-    //     .rotateX(Math.PI/4)
-    //     .translateZ(4)
-    //     .translateX(-0.5)
-    //
-    // let plain = defaultPlain()
-    //     .translateX(-3)
-    //     .translateZ(3)
-    //     .translateY(1.1)
+    let cube2 = texturedCube()
+        .rotateX(Math.PI/4)
+        .translateZ(4)
+        .translateX(-0.5)
+
+    let plain = defaultPlain()
+        .translateX(-3)
+        .translateZ(3)
+        .translateY(1.1)
 
     scene.addMesh(cube1);
-    // scene.addMesh(cube2);
-    // scene.addMesh(plain)
+    scene.addMesh(cube2);
+    scene.addMesh(plain)
 
     onMount(() => {
         canvas.width = width;
@@ -59,11 +59,13 @@
         ["Rotate Z", () => camera.cameraPos.rotatePosZ()],
         ["Rotate -Z", () => camera.cameraPos.rotateNegZ()],
     ]
+
+    const canvasSize = `height: ${height*2}px; width: ${width*2}px;`
 </script>
 
 
 <canvas id="camera_canvas" bind:this={canvas}
-        style="border: 3px black solid;"></canvas>
+        style={"border: 3px black solid;"+canvasSize}></canvas>
 <br/>
 
 

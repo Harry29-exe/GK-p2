@@ -97,31 +97,32 @@ export class CameraEngine {
         // ctx.fillStyle = 'white'
 
         let pointChecker = tris.point2dChecker();
+        let data = this.ctx.getImageData(0,0, this.cameraInfo.width, this.cameraInfo.height)
         for (let x = 0; x < this.cameraInfo.width; x++) {
             for (let y = 0; y < this.cameraInfo.height; y++) {
                 let x3d = this.xTo3dSpace(x)
                 let y3d = this.yTo3dSpace(y)
                 if (pointChecker(x3d, y3d)) {
-                    // debugger
                     let texCoord = tris.getTextureCoords(x3d, y3d)
                     let color = texture.getPx(texCoord.x, texCoord.y)
-                    let data = this.ctx.createImageData(1,1)
-                    data.data[0] = color.r * lightStrength
-                    data.data[1] = color.g * lightStrength
-                    data.data[2] = color.b * lightStrength
-                    data.data[3] = 255
-                    ctx.putImageData(data, x, y)
+
+                    let start = (y * data.width + x) * 4;
+                    data.data[start] = color.r * lightStrength;
+                    data.data[start+1] = color.g * lightStrength;
+                    data.data[start+2] = color.b * lightStrength;
+                    data.data[start+3] = 255;
                 }
             }
+            this.ctx.putImageData(data, 0, 0)
         }
 
-        ctx.strokeStyle = 'white'
-        for (let j = 0; j < 3; j++) {
-            x = this.scaleXToCanvas(tris.vertexes[j].d[0])
-            y = this.scaleYToCanvas(tris.vertexes[j].d[1])
-            ctx.lineTo(x, y)
-        }
-        ctx.stroke()
+        // ctx.strokeStyle = 'white'
+        // for (let j = 0; j < 3; j++) {
+        //     x = this.scaleXToCanvas(tris.vertexes[j].d[0])
+        //     y = this.scaleYToCanvas(tris.vertexes[j].d[1])
+        //     ctx.lineTo(x, y)
+        // }
+        // ctx.stroke()
     }
 
     private initProjector(){
