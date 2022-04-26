@@ -54,6 +54,10 @@ export class Vec3d {
         return nv;
     }
 
+    public toVec2d(): Vec2d {
+        return Vec2d.from(this.x, this.y)
+    }
+
     public get x(): number {
         return this.d[0]
     }

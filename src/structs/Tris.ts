@@ -108,74 +108,23 @@ export class Tris {
         return coords
     }
 
+    //https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
     public getTextureCoords(x: number, y: number): Vec2d {
-        let p1xDistance = Math.abs(this.p1.x - x)
-        let p2xDistance = Math.abs(this.p2.x - x)
-        let p3xDistance = Math.abs(this.p3.x - x)
+        let p = Vec2d.from(x,y);
+        let p1 = this.p1.toVec2d();
+        let p2 = this.p2.toVec2d();
+        let p3 = this.p3.toVec2d();
 
-        let textureX: number = undefined;
-        let sumX = p1xDistance + p2xDistance + p3xDistance
-        let p1XWeight = sumX / p1xDistance
-        if (!isFinite(p1XWeight)) {
-            textureX = this.p1tex.x
-        }
-        let p2XWeight = sumX / p2xDistance
-        if (!isFinite(p2XWeight)) {
-            textureX = this.p2tex.x
-        }
-        let p3XWeight = sumX / p3xDistance
-        if (!isFinite(p3XWeight)) {
-            textureX = this.p3tex.x
-        }
-        let weightXSum = p1XWeight + p2XWeight + p3XWeight;
+        let p1p2p3 = calcArea(p1,p2,p3)
+        let p1p2P = calcArea(p1, p2, p) / p1p2p3
+        let p2p3P = calcArea(p2, p3, p) / p1p2p3
+        let p3p1P = calcArea(p3, p1, p) / p1p2p3
 
-        if (textureX === undefined) {
-            textureX = (this.p1tex.x*p1XWeight + this.p2tex.x*p2XWeight + this.p3tex.x*p3XWeight)/weightXSum
-        }
-
-        let p1yDistance = Math.abs(this.p1.y - y)
-        let p2yDistance = Math.abs(this.p2.y - y)
-        let p3yDistance = Math.abs(this.p3.y - y)
-
-        let textureY: number = undefined;
-        let sumY = p1yDistance + p2yDistance + p3yDistance
-        let p1YWeight = sumY / p1yDistance
-        if (!isFinite(p1YWeight)) {
-            textureY = this.p1tex.y
-        }
-        let p2YWeight = sumY / p2yDistance
-        if (!isFinite(p2YWeight)) {
-            textureY = this.p2tex.y
-        }
-        let p3YWeight = sumY / p3yDistance
-        if (!isFinite(p3YWeight)) {
-            textureY = this.p3tex.y
-        }
-        let weightYSum = p1YWeight + p2YWeight + p3YWeight;
-
-        if (textureY === undefined) {
-            textureY = (this.p1tex.y*p1YWeight + this.p2tex.y*p2YWeight + this.p3tex.y*p3YWeight)/weightYSum
-        }
-
-        return Vec2d.from(textureX, textureY)
-
+        return Vec2d.from(
+            this.p1tex.x * p2p3P + this.p2tex.x * p3p1P + this.p3tex.x * p1p2P,
+            this.p1tex.y * p2p3P + this.p2tex.y * p3p1P + this.p3tex.y * p1p2P,
+        )
     }
-
-    // public getTextureCoords(x: number, y: number): Vec2d {
-    //     let minX3d = Math.min(this.p1.x, this.p2.x, this.p3.x)
-    //     let maxX3d = Math.max(this.p1.x, this.p2.x, this.p3.x)
-    //     let minY3d = Math.min(this.p1.y, this.p2.y, this.p3.y)
-    //     let maxY3d = Math.max(this.p1.y, this.p2.y, this.p3.y)
-    //     let minX2d = Math.min(this.p1tex.x, this.p2tex.x, this.p3tex.x)
-    //     let maxX2d = Math.max(this.p1tex.x, this.p2tex.x, this.p3tex.x)
-    //     let minY2d = Math.min(this.p1tex.y, this.p2tex.y, this.p3tex.y)
-    //     let maxY2d = Math.max(this.p1tex.y, this.p2tex.y, this.p3tex.y)
-    //
-    //     let textureX = (x - minX3d) * (Math.abs(maxX2d - minX2d) / Math.abs(maxX3d - minX3d)) + minX2d
-    //     let textureY = (y - minY3d) * (Math.abs(maxY2d - minY2d) / Math.abs(maxY3d - minY3d)) + minX2d
-    //
-    //     return Vec2d.from(textureX, textureY)
-    // }
 
     public point2dChecker(): (x: number, y: number) => boolean {
         const sign = (x1, y1, x2, y2, x3, y3) => {
@@ -272,4 +221,11 @@ export class Tris {
         return this.texCoords[2]
     }
 
+}
+
+export function calcArea(v1: Vec2d, v2: Vec2d, v3: Vec2d): number {
+    return Math.abs(
+        (v1.x*v2.y + v2.x*v3.y + v3.x*v1.y - v1.y*v2.x - v2.y*v3.x - v3.y*v1.x) /
+        2
+    )
 }
