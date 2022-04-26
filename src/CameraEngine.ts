@@ -2,16 +2,28 @@ import {Matrix4x4} from "./structs/Matrix4x4";
 import {Mesh} from "./structs/Mesh";
 import {ProjMatrix} from "./structs/ProjMatrix";
 import {Vec3d} from "./structs/Vectors";
-import {Tris} from "./structs/Tris";
+import type {Tris} from "./structs/Tris";
+import {Texture} from "./structs/Texture";
 
 const identity = Matrix4x4.identity();
+const texture = new Texture(new Uint8ClampedArray(
+    [
+        255,   0,   0,
+          0, 255,   0,
+          0,   0, 255,
+        255, 255, 255,
+
+    ]), 2, 2
+)
 
 export type Ctx = CanvasRenderingContext2D
 export class CameraEngine {
     public readonly cameraInfo: CameraInfo
     public readonly cameraPos = new CameraPos();
 
-    public readonly lightPos: Vec3d = Vec3d.from(-0.5,-0.3,-0.8)
+    private lightPos: Vec3d = Vec3d.from(-0.5,0.3,-0.8)
+    private projector: (tris: Tris) => Tris;
+    private ctx: CanvasRenderingContext2D
 
     constructor(width: number, height: number) {
         this.cameraInfo = new CameraInfo(width, height);
@@ -23,8 +35,11 @@ export class CameraEngine {
     }
 
     public drawMesh(mesh: Mesh, ctx: Ctx) {
+        this.ctx = ctx
         let cameraPos = this.cameraPos.cameraPos
         let meshToRender = new Mesh([])
+
+        // eliminate opposite oriented tris
         for (let i = 0; i < mesh.triangles.length; i++) {
             let tris = mesh.triangles[i]
             let t = tris.p1.subtract(cameraPos)
@@ -33,55 +48,70 @@ export class CameraEngine {
                 meshToRender.add(tris)
             }
         }
+
+        // sort remaining tris
         meshToRender.triangles.sort((t1, t2) => {
             return t2.avgDistanceToCamera(cameraPos) - t1.avgDistanceToCamera(cameraPos)
         })
-        const projector = this.projector()
 
+        // initialize projection function
+        this.initProjector()
+        // draw tris to screen
+        let imageData = this.ctx.getImageData(0,0,this.cameraInfo.width, this.cameraInfo.height)
         for (let i = 0; i < meshToRender.triangles.length; i++) {
-            let tris = meshToRender.triangles[i]
-
-            let color = 255;
-            let trisNormal = tris.calcNormal()
-            let lightFactor = trisNormal.normalise().dotProduct(this.lightPos.normalise())
-            color *= Math.sin(lightFactor * Math.PI)
-            console.log(lightFactor)
-
-            tris = projector(tris)
-
-            let x = this.scaleXCoord(tris.vertexes[2].d[0])
-            let y = this.scaleYCoord(tris.vertexes[2].d[1])
-
-            ctx.beginPath()
-            ctx.moveTo(x, y)
-            ctx.fillStyle = `rgba(${color}, ${color},${color}, 1)`
-
-            for (let j = 0; j < 3; j++) {
-                x = this.scaleXCoord(tris.vertexes[j].d[0])
-                y = this.scaleYCoord(tris.vertexes[j].d[1])
-                ctx.lineTo(x, y)
-            }
-            ctx.fill()
-
-            ctx.strokeStyle = `pink`
-            ctx.beginPath()
-            ctx.moveTo(x, y)
-
-            for (let j = 0; j < 3; j++) {
-                x = this.scaleXCoord(tris.vertexes[j].d[0])
-                y = this.scaleYCoord(tris.vertexes[j].d[1])
-                ctx.lineTo(x, y)
-            }
-            ctx.stroke()
+            this.draw(meshToRender.triangles[i])
         }
     }
 
-    private projector(): (tris: Tris) => Tris {
+    private draw(tris: Tris) {
+        let trisNormal = tris.calcNormal()
+        let lightStrength = trisNormal.normalise().dotProduct(this.lightPos.normalise())
+        lightStrength = Math.max(Math.min(lightStrength,1), 0.15)
+
+        tris = this.projector(tris)
+
+        let x = this.scaleXToCanvas(tris.vertexes[2].d[0])
+        let y = this.scaleYToCanvas(tris.vertexes[2].d[1])
+
+        let ctx = this.ctx
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        // ctx.fillStyle = `rgba(${color}, ${color},${color}, 1)`
+        // ctx.fillStyle = 'white'
+
+        let pointChecker = tris.point2dChecker();
+        for (let x = 0; x < this.cameraInfo.width; x++) {
+            for (let y = 0; y < this.cameraInfo.height; y++) {
+                let x3d = this.xTo3dSpace(x)
+                let y3d = this.yTo3dSpace(y)
+                if (pointChecker(x3d, y3d)) {
+                    let texCoord = tris.getTextureCoords(x3d, y3d)
+                    let color = texture.getPx(texCoord.x, texCoord.y)
+                    let data = this.ctx.createImageData(1,1)
+                    data.data[0] = color.r * lightStrength
+                    data.data[1] = color.g * lightStrength
+                    data.data[2] = color.b * lightStrength
+                    data.data[3] = 255
+                    ctx.putImageData(data, x, y)
+                }
+            }
+        }
+
+        ctx.strokeStyle = 'white'
+        for (let j = 0; j < 3; j++) {
+            x = this.scaleXToCanvas(tris.vertexes[j].d[0])
+            y = this.scaleYToCanvas(tris.vertexes[j].d[1])
+            ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+    }
+
+    private initProjector(){
         const projMatrix  = this.cameraInfo.createProjectionMatrix();
         const lookAt = this.cameraPos.createLookAtMatrix()
 
-        return (tris: Tris): Tris => {
-            let projTris = Tris.empty()
+        this.projector = (tris: Tris): Tris => {
+            let projTris = tris.copy()
             for (let i = 0; i < 3; i++) {
                 let temp = identity.multiplyVec3d(tris.vertexes[i])
                 temp = lookAt.multiplyVec3d(temp)
@@ -92,12 +122,20 @@ export class CameraEngine {
     }
 
 
-    private scaleXCoord(xCoord: number): number {
+    private scaleXToCanvas(xCoord: number): number {
         return (xCoord + 1) * (this.cameraInfo.width / 2)
     }
 
-    private scaleYCoord(yCoord: number): number {
+    private scaleYToCanvas(yCoord: number): number {
         return (yCoord + 1) * (this.cameraInfo.height / 2)
+    }
+
+    private xTo3dSpace(xCoord: number): number {
+        return (2*xCoord)/this.cameraInfo.width - 1
+    }
+
+    private yTo3dSpace(yCoord: number): number {
+        return (2*yCoord)/this.cameraInfo.height - 1
     }
 
 }
@@ -214,8 +252,8 @@ class CameraPos {
         let vTarget = this.vLookDir;
 
 
-        vTarget = Matrix4x4.rotationX(this.rotX).
-            multiply(Matrix4x4.rotationY(this.rotY))
+        vTarget = Matrix4x4.rotationX(this.rotX)
+            .multiply(Matrix4x4.rotationY(this.rotY))
             .multiplyVec3d(vTarget)
 
         return vTarget

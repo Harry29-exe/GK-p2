@@ -1,7 +1,7 @@
 import {Mesh} from "./Mesh";
 import {Matrix4x4} from "./Matrix4x4";
 import type {Vec3d} from "./Vectors";
-import {Tris} from "./Tris";
+import type {Tris} from "./Tris";
 
 export class ProjMatrix extends Matrix4x4 {
 
@@ -33,7 +33,7 @@ export class ProjMatrix extends Matrix4x4 {
     //     return newTris
     // }
     public projectTris(tris: Tris): Tris {
-        const newTris = Tris.empty();
+        const newTris = tris.copy();;
         for (let i = 0; i < 3; i++) {
             newTris.vertexes[i] = this.projectVec(tris.vertexes[i]);
         }

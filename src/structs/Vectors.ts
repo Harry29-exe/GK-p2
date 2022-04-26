@@ -87,3 +87,48 @@ export class Vec3d {
     }
 
 }
+
+export class Vec2d {
+    public d: [number, number]
+
+    constructor(d: [number, number]) {
+        this.d = d;
+    }
+
+    public static from(x: number, y: number): Vec2d {
+        return new Vec2d([x,y])
+    }
+
+    public static empty(): Vec2d {
+        return new Vec2d([0,0])
+    }
+
+    public subtract(v: Vec2d): Vec2d {
+        return Vec2d.from(this.x - v.x, this.y - v.y)
+    }
+
+    public add(v: Vec2d): Vec2d {
+        return Vec2d.from(this.x + v.x, this.y - v.y)
+    }
+
+    public length(): number {
+        return Math.sqrt(this.x*this.x + this.y*this.y)
+    }
+
+    public get x(): number {
+        return this.d[0]
+    }
+
+    public set x(x: number) {
+        this.d[0] = x;
+    }
+
+    public get y(): number {
+        return this.d[1]
+    }
+
+    public set y(y: number) {
+        this.d[1] = y;
+    }
+
+}
