@@ -40,6 +40,7 @@ export class CameraEngine {
 
     private lightPos: Vec3d = Vec3d.from(-0.5,0.3,-0.8)
     private projector: (tris: Tris) => Tris;
+    private projectVec: (vec: Vec3d) => Vec3d;
     private ctx: CanvasRenderingContext2D
 
     constructor(width: number, height: number) {
@@ -66,10 +67,12 @@ export class CameraEngine {
             }
         }
 
+        // project
         this.initProjector()
         for (let i = 0; i < meshToRender.triangles.length; i++) {
             meshToRender.triangles[i] = this.projector(meshToRender.triangles[i])
         }
+
         // sort remaining tris
         meshToRender.triangles
             .sort((t1, t2) => t2.maxY - t1.maxY)
@@ -104,13 +107,18 @@ export class CameraEngine {
                 }
                 let tris = trisAtPx[trisIndex]
 
+                // lightning
+                let trisNormal = tris.calcNormal()
+                let lightStrength = trisNormal.normalise().dotProduct(this.lightPos.normalise())
+                lightStrength = Math.max(Math.min(lightStrength,1), 0.15)
+
 
                 let textureCoords = tris.getTextureCoords(x3d,y3d)
                 let color = texture.getPx(textureCoords.x, textureCoords.y)
                 let dataStart = (y*data.width + x) * 4;
-                data.data[dataStart] = color.r
-                data.data[dataStart+1] = color.g
-                data.data[dataStart+2] = color.b
+                data.data[dataStart] = color.r * lightStrength
+                data.data[dataStart+1] = color.g * lightStrength
+                data.data[dataStart+2] = color.b * lightStrength
                 data.data[dataStart+3] = 255
             }
         }
@@ -134,6 +142,14 @@ export class CameraEngine {
                 projTris.vertexes[i] = projMatrix.projectVec(temp)
             }
             return projTris
+        }
+
+        this.projectVec = (vec: Vec3d): Vec3d => {
+            let vecCopy = vec.multiply(1)
+
+            vecCopy = identity.multiplyVec3d(vecCopy)
+            vecCopy = lookAt.multiplyVec3d(vecCopy)
+            return projMatrix.projectVec(vecCopy)
         }
     }
 
