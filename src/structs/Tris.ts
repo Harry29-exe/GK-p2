@@ -55,10 +55,10 @@ export class Tris {
         )
     }
 
-    private equationPlane: Vec3d
-    public equation_plane(): Vec3d {
-        if (this.equationPlane) {
-            return this.equationPlane
+    private equation_plane: Vec3d
+    public equationPlane(): Vec3d {
+        if (this.equation_plane) {
+            return this.equation_plane
         }
         let a1 = this.p2.x - this.p1.x;
         let b1 = this.p2.y - this.p1.y;
@@ -72,14 +72,18 @@ export class Tris {
         let d = (-a * this.p1.x - b * this.p1.y - c * this.p1.z);
         // document.write("equation of plane is " + a + " x + "
         //     + b + " y + " + c + " z + " + d + " = 0.");
-        this.equationPlane = Vec3d.from(a,b,c,d)
-        return this.equationPlane
+        this.equation_plane = Vec3d.from(a,b,c,d)
+        return this.equation_plane
     }
 
+    public calcZOn(x: number, y: number): number {
+        let plane = this.equationPlane()
+        return -(plane.x*x + plane.y*y + plane.w) / plane.z
+    }
 
     public getTextureCoords2(x: number, y: number): Vec2d {
         // debugger
-        let plane = this.equation_plane()
+        let plane = this.equationPlane()
         let pointInTris: Vec3d = Vec3d.from(x,y,-(plane.x*x + plane.y*y + plane.w)/plane.z)
         let p1Distance = this.p1.subtract(pointInTris).length()
         let p2Distance = this.p2.subtract(pointInTris).length()
@@ -126,6 +130,25 @@ export class Tris {
         )
     }
 
+    public pointInside(x: number, y: number): boolean {
+        const sign = (x1, y1, x2, y2, x3, y3) => {
+            return (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3)
+        }
+
+        let points = this.vertexes
+        let d1,d2,d3
+        let hasNeg, hasPos
+
+        d1 = sign(x,y, points[0].x, points[0].y, points[1].x, points[1].y)
+        d2 = sign(x,y, points[1].x, points[1].y, points[2].x, points[2].y)
+        d3 = sign(x,y, points[2].x, points[2].y, points[0].x, points[0].y)
+
+        hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+        hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+        return !(hasNeg && hasPos);
+    }
+
     public point2dChecker(): (x: number, y: number) => boolean {
         const sign = (x1, y1, x2, y2, x3, y3) => {
             return (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3)
@@ -143,58 +166,19 @@ export class Tris {
             hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
             return !(hasNeg && hasPos);
         }
-
     }
-    // public point2dChecker(): (x: number, y: number) => boolean {
-    //     let lowestPoint = 0;
-    //     if (this.p1.y < this.p2.y) {
-    //         if (this.p1.y < this.p3.y) {
-    //             lowestPoint = 1;
-    //         } else {
-    //             lowestPoint = 2
-    //         }
-    //     } else {
-    //         if (this.p2.y < this.p3.y) {
-    //             lowestPoint = 2
-    //         } else {
-    //             lowestPoint = 3
-    //         }
-    //     }
-    //     let a: number
-    //     let b: number
-    //
-    //     let p1p2Line: (x: number, y: number) => boolean;
-    //     a = (this.p1.y - this.p2.y) / (this.p1.x - this.p2.x)
-    //     b = this.p1.y - a * this.p1.x
-    //     if (lowestPoint == 2)
-    //         p1p2Line = (x, y) => a*x + b <= y
-    //     else
-    //         p1p2Line = (x, y) => a*x + b >= y
-    //
-    //
-    //     let p2p3Line: (x: number, y: number) => boolean;
-    //     a = (this.p2.y - this.p3.y) / (this.p2.x - this.p3.x)
-    //     b = this.p2.y - a * this.p2.x
-    //     if (lowestPoint == 3)
-    //         p2p3Line = (x, y) =>  a*x + b <= y
-    //     else
-    //         p2p3Line = (x, y) =>  a*x + b >= y
-    //
-    //
-    //     let p3p1Line: (x: number, y: number) => boolean;
-    //     a = (this.p3.y - this.p1.y) / (this.p3.x - this.p1.x)
-    //     b = this.p3.y - a * this.p3.x
-    //     if (lowestPoint == 1)
-    //         p3p1Line = (x, y) => a*x + b <= y
-    //     else
-    //         p3p1Line = (x, y) =>  a*x + b >= y
-    //
-    //     return (x,y ) => p1p2Line(x,y) && p2p3Line(x,y) && p3p1Line(x,y)
-    // }
 
     public copy(): Tris {
         return new Tris(this.vertexes.slice(0, 3) as [Vec3d,Vec3d,Vec3d]
             , this.texCoords.slice(0,3) as [Vec2d,Vec2d,Vec2d])
+    }
+
+    public get maxY(): number {
+        return Math.max(this.p1.y, this.p2.y, this.p3.y)
+    }
+
+    public get minY(): number {
+        return Math.min(this.p1.y, this.p2.y, this.p3.y)
     }
 
     public get p1(): Vec3d {

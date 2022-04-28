@@ -66,63 +66,60 @@ export class CameraEngine {
             }
         }
 
-        // sort remaining tris
-        meshToRender.triangles.sort((t1, t2) => {
-            return t2.avgDistanceToCamera(cameraPos) - t1.avgDistanceToCamera(cameraPos)
-        })
-
-        // initialize projection function
         this.initProjector()
+        for (let i = 0; i < meshToRender.triangles.length; i++) {
+            meshToRender.triangles[i] = this.projector(meshToRender.triangles[i])
+        }
+        // sort remaining tris
+        meshToRender.triangles
+            .sort((t1, t2) => t2.maxY - t1.maxY)
+
+        let data = this.ctx.getImageData(0,0, this.cameraInfo.width, this.cameraInfo.height)
+        for (let y = 0; y < this.cameraInfo.height; y++) {
+            let y3d = this.yTo3dSpace(y)
+
+            let trisAtHeight = meshToRender.triangles.filter(tris => {
+                return tris.maxY >= y3d && tris.minY <= y3d
+            })
+            if (trisAtHeight.length === 0) {
+                continue;
+            }
+
+            for (let x = 0; x < this.cameraInfo.width; x++) {
+                let x3d = this.xTo3dSpace(x)
+                let trisAtPx = trisAtHeight.filter(tris => tris.pointInside(x3d, y3d))
+                if (trisAtPx.length === 0) {
+                    continue
+                }
+
+                let closestDistance = trisAtPx[0].calcZOn(x3d,y3d)
+                let trisIndex = 0
+                let distance = 0
+                for (let i = 1; i < trisAtPx.length; i++) {
+                    distance = trisAtPx[i].calcZOn(x3d,y3d)
+                    if (distance < closestDistance) {
+                        closestDistance = distance
+                        trisIndex = i
+                    }
+                }
+                let tris = trisAtPx[trisIndex]
+
+
+                let textureCoords = tris.getTextureCoords(x3d,y3d)
+                let color = texture.getPx(textureCoords.x, textureCoords.y)
+                let dataStart = (y*data.width + x) * 4;
+                data.data[dataStart] = color.r
+                data.data[dataStart+1] = color.g
+                data.data[dataStart+2] = color.b
+                data.data[dataStart+3] = 255
+            }
+        }
+        this.ctx.putImageData(data, 0, 0)
 
         // draw remaining tris
-        for (let i = 0; i < meshToRender.triangles.length; i++) {
-            this.draw(meshToRender.triangles[i])
-        }
-    }
-
-    private draw(tris: Tris) {
-        let trisNormal = tris.calcNormal()
-        let lightStrength = trisNormal.normalise().dotProduct(this.lightPos.normalise())
-        lightStrength = Math.max(Math.min(lightStrength,1), 0.15)
-
-        tris = this.projector(tris)
-
-        let x = this.scaleXToCanvas(tris.vertexes[2].d[0])
-        let y = this.scaleYToCanvas(tris.vertexes[2].d[1])
-
-        let ctx = this.ctx
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        // ctx.fillStyle = `rgba(${color}, ${color},${color}, 1)`
-        // ctx.fillStyle = 'white'
-
-        let pointChecker = tris.point2dChecker();
-        let data = this.ctx.getImageData(0,0, this.cameraInfo.width, this.cameraInfo.height)
-        for (let x = 0; x < this.cameraInfo.width; x++) {
-            for (let y = 0; y < this.cameraInfo.height; y++) {
-                let x3d = this.xTo3dSpace(x)
-                let y3d = this.yTo3dSpace(y)
-                if (pointChecker(x3d, y3d)) {
-                    let texCoord = tris.getTextureCoords(x3d, y3d)
-                    let color = texture.getPx(texCoord.x, texCoord.y)
-
-                    let start = (y * data.width + x) * 4;
-                    data.data[start] = color.r * lightStrength;
-                    data.data[start+1] = color.g * lightStrength;
-                    data.data[start+2] = color.b * lightStrength;
-                    data.data[start+3] = 255;
-                }
-            }
-            this.ctx.putImageData(data, 0, 0)
-        }
-
-        // ctx.strokeStyle = 'white'
-        // for (let j = 0; j < 3; j++) {
-        //     x = this.scaleXToCanvas(tris.vertexes[j].d[0])
-        //     y = this.scaleYToCanvas(tris.vertexes[j].d[1])
-        //     ctx.lineTo(x, y)
+        // for (let i = 0; i < meshToRender.triangles.length; i++) {
+        //     this.draw(meshToRender.triangles[i])
         // }
-        // ctx.stroke()
     }
 
     private initProjector(){
