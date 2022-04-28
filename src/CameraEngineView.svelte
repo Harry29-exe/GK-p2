@@ -1,11 +1,10 @@
 <script lang="ts">
     import {CameraEngine} from "./CameraEngine";
     import {onMount} from "svelte";
-    import {defaultCube, defaultPlain, Mesh, texturedCube} from "./structs/Mesh";
-    import {Tris} from "./structs/Tris";
+    import {defaultPlain, Mesh, texturedCube} from "./structs/Mesh";
 
-    const width = 400;
-    const height = 320;
+    const width = 600;
+    const height = 400;
     let canvas: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D;
 
@@ -13,12 +12,18 @@
     let scene: Mesh = new Mesh([]);
     let cube1 = texturedCube()
         .translateZ(2)
-        .translateX(-0.5)
-
+        .translateX(-1)
     let cube2 = texturedCube()
-        .rotateX(Math.PI/4)
+        .rotateX(Math.PI / 4)
         .translateZ(4)
-        .translateX(-0.5)
+        .translateX(-1)
+    let cube3 = texturedCube()
+        .translateZ(2)
+        .translateX(0.5)
+    let cube4 = texturedCube()
+        .rotateX(Math.PI / 4)
+        .translateZ(4)
+        .translateX(0.5)
 
     let plain = defaultPlain()
         .translateX(-3)
@@ -28,6 +33,9 @@
     scene.addMesh(cube1);
     scene.addMesh(cube2);
     scene.addMesh(plain)
+    scene.addMesh(cube3);
+    scene.addMesh(cube4)
+
 
     onMount(() => {
         canvas.width = width;
