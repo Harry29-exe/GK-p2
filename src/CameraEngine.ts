@@ -3,35 +3,10 @@ import {Mesh} from "./structs/Mesh";
 import {ProjMatrix} from "./structs/ProjMatrix";
 import {Vec3d} from "./structs/Vectors";
 import type {Tris} from "./structs/Tris";
-import {Texture} from "./structs/Texture";
+import {generateLg, Texture} from "./structs/Texture";
 
 const identity = Matrix4x4.identity();
-const texture = new Texture(new Uint8ClampedArray(
-    [
-        255,   0,   0,
-        255,   0,   0,
-        255,   0,   0,
-        255,   0,   0,
-
-          0, 255,   0,
-          0, 255,   0,
-          0, 255,   0,
-          0, 255,   0,
-
-
-          0,   0, 255,
-          0,   0, 255,
-          0,   0, 255,
-          0,   0, 255,
-
-        255, 255, 255,
-        255, 255, 255,
-        255, 255, 255,
-        255, 255, 255,
-
-
-    ]), 4, 4
-)
+const texture = generateLg()
 
 export type Ctx = CanvasRenderingContext2D
 export class CameraEngine {
