@@ -3,19 +3,21 @@ import {Mesh} from "./structs/Mesh";
 import {ProjMatrix} from "./structs/ProjMatrix";
 import {Vec3d} from "./structs/Vectors";
 import type {Tris} from "./structs/Tris";
-import {generateLg, Texture} from "./structs/Texture";
+import {generateLg} from "./structs/Texture";
 
 const identity = Matrix4x4.identity();
 const texture = generateLg()
 
+let drawEdges = false
+
 export type Ctx = CanvasRenderingContext2D
+
 export class CameraEngine {
     public readonly cameraInfo: CameraInfo
     public readonly cameraPos = new CameraPos();
 
-    private lightPos: Vec3d = Vec3d.from(-0.5,0.3,-0.8)
+    private lightPos: Vec3d = Vec3d.from(-0.5, 0.3, -0.8)
     private projector: (tris: Tris) => Tris;
-    private projectVec: (vec: Vec3d) => Vec3d;
     private ctx: CanvasRenderingContext2D
 
     constructor(width: number, height: number) {
@@ -85,24 +87,36 @@ export class CameraEngine {
                 // lightning
                 let trisNormal = tris.calcNormal()
                 let lightStrength = trisNormal.normalise().dotProduct(this.lightPos.normalise())
-                lightStrength = Math.max(Math.min(lightStrength,1), 0.15)
+                lightStrength = Math.max(Math.min(lightStrength, 1), 0.15)
 
 
-                let textureCoords = tris.getTextureCoords(x3d,y3d)
+                let textureCoords = tris.getTextureCoords(x3d, y3d)
                 let color = texture.getPx(textureCoords.x, textureCoords.y)
-                let dataStart = (y*data.width + x) * 4;
+                let dataStart = (y * data.width + x) * 4;
                 data.data[dataStart] = color.r * lightStrength
-                data.data[dataStart+1] = color.g * lightStrength
-                data.data[dataStart+2] = color.b * lightStrength
-                data.data[dataStart+3] = 255
+                data.data[dataStart + 1] = color.g * lightStrength
+                data.data[dataStart + 2] = color.b * lightStrength
+                data.data[dataStart + 3] = 255
             }
         }
         this.ctx.putImageData(data, 0, 0)
 
-        // draw remaining tris
-        // for (let i = 0; i < meshToRender.triangles.length; i++) {
-        //     this.draw(meshToRender.triangles[i])
-        // }
+        if (drawEdges) {
+            ctx.strokeStyle = 'rgba(0,0,200, 0.7)'
+            ctx.lineWidth = 2
+            for (const tris of meshToRender.triangles) {
+                ctx.beginPath()
+                let x = this.scaleXToCanvas(tris.vertexes[2].x)
+                let y = this.scaleYToCanvas(tris.vertexes[2].y)
+                ctx.lineTo(x, y)
+                for (let j = 0; j < 3; j++) {
+                    x = this.scaleXToCanvas(tris.vertexes[j].x)
+                    y = this.scaleYToCanvas(tris.vertexes[j].y)
+                    ctx.lineTo(x, y)
+                }
+                ctx.stroke()
+            }
+        }
     }
 
     private initProjector(){
@@ -117,14 +131,6 @@ export class CameraEngine {
                 projTris.vertexes[i] = projMatrix.projectVec(temp)
             }
             return projTris
-        }
-
-        this.projectVec = (vec: Vec3d): Vec3d => {
-            let vecCopy = vec.multiply(1)
-
-            vecCopy = identity.multiplyVec3d(vecCopy)
-            vecCopy = lookAt.multiplyVec3d(vecCopy)
-            return projMatrix.projectVec(vecCopy)
         }
     }
 

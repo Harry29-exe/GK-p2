@@ -3,8 +3,8 @@
     import {onMount} from "svelte";
     import {defaultPlain, Mesh, texturedCube} from "./structs/Mesh";
 
-    const width = 600;
-    const height = 400;
+    const width = 900;
+    const height = 700;
     let canvas: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D;
 
@@ -72,25 +72,25 @@
     const canvasSize = ""
 </script>
 
+<div style="display: flex; justify-content: center">
 
-<canvas id="camera_canvas" bind:this={canvas}
-        style={"border: 3px black solid;"+canvasSize}></canvas>
-<br/>
+    <canvas id="camera_canvas" bind:this={canvas}
+            style={"border: 3px black solid;"+canvasSize}></canvas>
 
-
-{#each moveActions as action}
-<button on:click={() => {action[1](); update()}}>
-    {action[0]}
-</button>
+    <div>
+        {#each moveActions as action}
+            <button on:click={() => {action[1](); update()}}>
+                {action[0]}
+            </button>
+        {/each}
+        <br/>
+        {#each rotateActions as action}
+            <button on:click={() => {action[1](); update()}}>
+                {action[0]}
+            </button>
 {/each}
-<br/>
-{#each rotateActions as action}
-    <button on:click={() => {action[1](); update()}}>
-        {action[0]}
-    </button>
-{/each}
 
-<br/>
+        <br/>
 <button on:click={() => {
     camera.cameraInfo.posZoom();
     update()
@@ -99,24 +99,25 @@
     Zoom +
 </button>
 
-<button on:click={() => {
+        <button on:click={() => {
     camera.cameraInfo.negZoom();
     update()
 }}
 >
-    Zoom -
+            Zoom -
 </button>
 
 
-<br/>
-<button on:click={() => {
+        <br/>
+        <button on:click={() => {
     camera = new CameraEngine(width, height);
     update()
 }}
->
-    Reset
-</button>
-
+        >
+            Reset
+        </button>
+    </div>
+</div>
 
 <style>
     button {

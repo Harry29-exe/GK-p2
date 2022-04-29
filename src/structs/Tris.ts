@@ -72,54 +72,41 @@ export class Tris {
         let d = (-a * this.p1.x - b * this.p1.y - c * this.p1.z);
         // document.write("equation of plane is " + a + " x + "
         //     + b + " y + " + c + " z + " + d + " = 0.");
-        this.equation_plane = Vec3d.from(a,b,c,d)
+        this.equation_plane = Vec3d.from(a, b, c, d)
         return this.equation_plane
     }
 
     public calcZOn(x: number, y: number): number {
         let plane = this.equationPlane()
-        return -(plane.x*x + plane.y*y + plane.w) / plane.z
-    }
-
-    public getTextureCoords2(x: number, y: number): Vec2d {
-        // debugger
-        let plane = this.equationPlane()
-        let pointInTris: Vec3d = Vec3d.from(x,y,-(plane.x*x + plane.y*y + plane.w)/plane.z)
-        let p1Distance = this.p1.subtract(pointInTris).length()
-        let p2Distance = this.p2.subtract(pointInTris).length()
-        let p3Distance = this.p3.subtract(pointInTris).length()
-
-        let sum = p1Distance + p2Distance + p3Distance
-        let p1Weight = sum / p1Distance
-        if (!isFinite(p1Weight)) {
-            return Vec2d.from(this.p1tex.x, this.p1tex.y)
-        }
-        let p2Weight = sum / p2Distance
-        if (!isFinite(p2Weight)) {
-            return Vec2d.from(this.p2tex.x, this.p2tex.y)
-        }
-        let p3Weight = sum / p3Distance
-        if (!isFinite(p3Weight)) {
-            return Vec2d.from(this.p3tex.x, this.p3tex.y)
-        }
-        let weightSum = p1Weight + p2Weight + p3Weight;
-
-        let coords = Vec2d.from(
-            (this.p1tex.x*p1Weight + this.p2tex.x*p2Weight + this.p3tex.x*p3Weight)/weightSum,
-            (this.p1tex.y*p1Weight + this.p2tex.y*p3Weight + this.p3tex.y*p3Weight)/weightSum,
-        )
-
-        return coords
+        return -(plane.x * x + plane.y * y + plane.w) / plane.z
     }
 
     //https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
     public getTextureCoords(x: number, y: number): Vec2d {
-        let p = Vec2d.from(x,y);
+        let p = Vec3d.from(x, y, this.calcZOn(x, y));
+        let p1 = this.p1.multiply(1);
+        let p2 = this.p2.multiply(1);
+        let p3 = this.p3.multiply(1);
+
+        let p1p2p3 = calc3dArea(p1, p2, p3)
+        let p1p2P = calc3dArea(p1, p2, p) / p1p2p3
+        let p2p3P = calc3dArea(p2, p3, p) / p1p2p3
+        let p3p1P = calc3dArea(p3, p1, p) / p1p2p3
+
+        return Vec2d.from(
+            this.p1tex.x * p2p3P + this.p2tex.x * p3p1P + this.p3tex.x * p1p2P,
+            this.p1tex.y * p2p3P + this.p2tex.y * p3p1P + this.p3tex.y * p1p2P,
+        )
+    }
+
+    //https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
+    public getTextureCoords2d(x: number, y: number): Vec2d {
+        let p = Vec2d.from(x, y);
         let p1 = this.p1.toVec2d();
         let p2 = this.p2.toVec2d();
         let p3 = this.p3.toVec2d();
 
-        let p1p2p3 = calcArea(p1,p2,p3)
+        let p1p2p3 = calcArea(p1, p2, p3)
         let p1p2P = calcArea(p1, p2, p) / p1p2p3
         let p2p3P = calcArea(p2, p3, p) / p1p2p3
         let p3p1P = calcArea(p3, p1, p) / p1p2p3
@@ -147,25 +134,6 @@ export class Tris {
         hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
         return !(hasNeg && hasPos);
-    }
-
-    public point2dChecker(): (x: number, y: number) => boolean {
-        const sign = (x1, y1, x2, y2, x3, y3) => {
-            return (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3)
-        }
-
-        let points = this.vertexes
-        let d1,d2,d3
-        let hasNeg, hasPos
-        return function (x,y): boolean {
-            d1 = sign(x,y, points[0].x, points[0].y, points[1].x, points[1].y)
-            d2 = sign(x,y, points[1].x, points[1].y, points[2].x, points[2].y)
-            d3 = sign(x,y, points[2].x, points[2].y, points[0].x, points[0].y)
-
-            hasNeg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-            hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0);
-            return !(hasNeg && hasPos);
-        }
     }
 
     public copy(): Tris {
@@ -212,4 +180,10 @@ export function calcArea(v1: Vec2d, v2: Vec2d, v3: Vec2d): number {
         (v1.x*v2.y + v2.x*v3.y + v3.x*v1.y - v1.y*v2.x - v2.y*v3.x - v3.y*v1.x) /
         2
     )
+}
+
+export function calc3dArea(v1: Vec3d, v2: Vec3d, v3: Vec3d): number {
+    let ab = v3.subtract(v1)
+    let ac = v2.subtract(v1)
+    return ab.crossProduct(ac).length() / 2
 }
