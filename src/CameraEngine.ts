@@ -53,8 +53,12 @@ export class CameraEngine {
         // sort remaining tris
         meshToRender.triangles
             .sort((t1, t2) => t2.maxY - t1.maxY)
+        // let lightPos = this.projector(Tris.from(this.lightPos, Vec3d.empty(), Vec3d.empty())).p1
+        let lightPos = this.lightPos
 
-        let data = this.ctx.getImageData(0,0, this.cameraInfo.width, this.cameraInfo.height)
+        console.log("render pipeline")
+
+        let data = this.ctx.getImageData(0, 0, this.cameraInfo.width, this.cameraInfo.height)
         for (let y = 0; y < this.cameraInfo.height; y++) {
             let y3d = this.yTo3dSpace(y)
 
@@ -86,7 +90,7 @@ export class CameraEngine {
 
                 // lightning
                 let trisNormal = tris.calcNormal()
-                let lightStrength = trisNormal.normalise().dotProduct(this.lightPos.normalise())
+                let lightStrength = trisNormal.normalise().dotProduct(lightPos.normalise())
                 lightStrength = Math.max(Math.min(lightStrength, 1), 0.15)
 
 
@@ -130,6 +134,14 @@ export class CameraEngine {
                 temp = lookAt.multiplyVec3d(temp)
                 projTris.vertexes[i] = projMatrix.projectVec(temp)
             }
+
+            // for (let i = 0; i < 3; i++) {
+            //     console.log("W=", projTris.vertexes[i].w)
+            //     projTris.texCoords[i].x = projTris.texCoords[i].x / projTris.vertexes[i].w
+            //     projTris.texCoords[i].y = projTris.texCoords[i].y / projTris.vertexes[i].w
+            //     projTris.texCoords[i].w = 1 / projTris.vertexes[i].w
+            // }
+
             return projTris
         }
     }
@@ -182,18 +194,20 @@ class CameraInfo {
 
 class CameraPos {
     //camera position
-    private vCamera = Vec3d.from(0,0,0)
+    // private vCamera = Vec3d.from(0.194,0.039,1.32)
+    private vCamera = Vec3d.from(1000, 0, 0)
     //normalized look direction
-    private vLookDir = Vec3d.from(0,0,1)
+    private vLookDir = Vec3d.from(0, 0, 1)
     //up vector
-    private vUp = Vec3d.from(0,1,0)
+    private vUp = Vec3d.from(0, 1, 0)
     private moveFactor = 0.1;
     private rotateFactor = Math.PI / 16;
-    private rotX = 0;
-    private rotY = 0;
+    private rotX = 0; // -0.3926;
+    private rotY = 0; // 0.785;
     private rotZ = 0;
 
     public createLookAtMatrix(): Matrix4x4 {
+        console.log("camera:", this.vCamera, this.rotX, this.rotY, this.rotZ)
         const vTarget = this.vCamera.add(this.vTarget());
         return Matrix4x4.lookAt(this.vCamera, vTarget, this.vUp)
             .multiply(Matrix4x4.rotationZ(this.rotZ));

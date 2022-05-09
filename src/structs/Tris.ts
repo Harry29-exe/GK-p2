@@ -3,10 +3,12 @@ import type {Matrix4x4} from "./Matrix4x4";
 
 export class Tris {
     public readonly vertexes: [Vec3d, Vec3d, Vec3d]
+    public readonly nonPerspectiveVertexes: [Vec3d, Vec3d, Vec3d]
     public readonly texCoords: [Vec2d, Vec2d, Vec2d]
 
     constructor(vert: [Vec3d, Vec3d, Vec3d], texCoords?: [Vec2d, Vec2d, Vec2d]) {
         this.vertexes = vert;
+        this.vertexes = [vert[0].copy(), vert[1].copy(), vert[2].copy()]
         if (texCoords) {
             this.texCoords = texCoords
         } else {
@@ -81,23 +83,42 @@ export class Tris {
         return -(plane.x * x + plane.y * y + plane.w) / plane.z
     }
 
+    // //https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
+    // public getTextureCoords(x: number, y: number): Vec2d {
+    //     let p = Vec3d.from(x, y, this.calcZOn(x, y));
+    //     let p1 = this.p1.copy();
+    //     let p2 = this.p2.copy();
+    //     let p3 = this.p3.copy();
+    //
+    //     let p1p2p3 = calc3dArea(p1, p2, p3)
+    //     let p1p2P = (calc3dArea(p1, p2, p) / p1p2p3)
+    //     let p2p3P = (calc3dArea(p2, p3, p) / p1p2p3)
+    //     let p3p1P = (calc3dArea(p3, p1, p) / p1p2p3)
+    //
+    //     return Vec2d.from(
+    //         this.p1tex.x * p2p3P + this.p2tex.x * p3p1P + this.p3tex.x * p1p2P,
+    //         this.p1tex.y * p2p3P + this.p2tex.y * p3p1P + this.p3tex.y * p1p2P,
+    //     )
+    // }
+
     //https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
     public getTextureCoords(x: number, y: number): Vec2d {
         let p = Vec3d.from(x, y, this.calcZOn(x, y));
-        let p1 = this.p1.multiply(1);
-        let p2 = this.p2.multiply(1);
-        let p3 = this.p3.multiply(1);
+        let p1 = this.p1.copy();
+        let p2 = this.p2.copy();
+        let p3 = this.p3.copy();
 
         let p1p2p3 = calc3dArea(p1, p2, p3)
-        let p1p2P = calc3dArea(p1, p2, p) / p1p2p3
-        let p2p3P = calc3dArea(p2, p3, p) / p1p2p3
-        let p3p1P = calc3dArea(p3, p1, p) / p1p2p3
+        let p1p2P = (calc3dArea(p1, p2, p) / p1p2p3)
+        let p2p3P = (calc3dArea(p2, p3, p) / p1p2p3)
+        let p3p1P = (calc3dArea(p3, p1, p) / p1p2p3)
 
         return Vec2d.from(
             this.p1tex.x * p2p3P + this.p2tex.x * p3p1P + this.p3tex.x * p1p2P,
             this.p1tex.y * p2p3P + this.p2tex.y * p3p1P + this.p3tex.y * p1p2P,
         )
     }
+
 
     //https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
     public getTextureCoords2d(x: number, y: number): Vec2d {
@@ -137,8 +158,9 @@ export class Tris {
     }
 
     public copy(): Tris {
-        return new Tris(this.vertexes.slice(0, 3) as [Vec3d,Vec3d,Vec3d]
-            , this.texCoords.slice(0,3) as [Vec2d,Vec2d,Vec2d])
+        return new Tris([this.p1.copy(), this.p2.copy(), this.p3.copy()]
+            , [this.p1tex.copy(), this.p2tex.copy(), this.p3tex.copy()]
+        )
     }
 
     public get maxY(): number {

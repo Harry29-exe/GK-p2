@@ -93,9 +93,10 @@ export class Matrix4x4 {
 
     private mulVec4ByCol(colNumber: number, vec: Vec3d): number {
         let sum = 0;
-        for (let i = 0; i < 4; i++) {
-            sum += this.rows[i*4+colNumber] * vec.d[i]
+        for (let i = 0; i < 3; i++) {
+            sum += this.rows[i * 4 + colNumber] * vec.d[i]
         }
+        sum += this.rows[3 * 4 + colNumber]
 
         return sum;
     }

@@ -12,7 +12,7 @@
     let scene: Mesh = new Mesh([]);
     let cube1 = texturedCube()
         .translateZ(2)
-        .translateX(-1)
+        .translateX(-1 + 1000)
     let cube2 = texturedCube()
         .rotateX(Math.PI / 4)
         .translateZ(4)
@@ -31,10 +31,10 @@
         .translateY(1.1)
 
     scene.addMesh(cube1);
-    scene.addMesh(cube2);
-    scene.addMesh(plain)
-    scene.addMesh(cube3);
-    scene.addMesh(cube4)
+    // scene.addMesh(cube2);
+    // scene.addMesh(plain)
+    // scene.addMesh(cube3);
+    // scene.addMesh(cube4)
 
 
     onMount(() => {
@@ -42,7 +42,7 @@
         canvas.height = height;
         ctx = canvas.getContext("2d");
         camera.clear(ctx);
-        camera.drawMesh(cube1, ctx)
+        camera.drawMesh(scene, ctx)
     })
 
     const update = () => {

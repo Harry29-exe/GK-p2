@@ -5,15 +5,28 @@ import type {Tris} from "./Tris";
 
 export class ProjMatrix extends Matrix4x4 {
 
+    // olc
     constructor(fov: number, zFar: number, zNear: number, width: number, height: number) {
-        const scaleFactor = 1/Math.tan(fov/2);
+        const scaleFactor = 1 / Math.tan(fov / 2);
         super([
-            (height/width) * scaleFactor, 0, 0 ,0,
+            (height / width) * scaleFactor, 0, 0, 0,
             0, scaleFactor, 0, 0,
             0, 0, zFar / (zFar - zNear), 1,
             0, 0, (-zFar - zNear) / (zFar - zNear), 0
         ])
     }
+
+    // constructor(fov: number, zFar: number, zNear: number, width: number, height: number) {
+    //     const scaleFactor = Math.tan(Math.PI * 0.5 - 0.5 * fov);
+    //     const rangeInv = 1 / (zNear - zFar)
+    //
+    //     super([
+    //         scaleFactor / (width / height), 0, 0 ,0,
+    //         0, scaleFactor, 0, 0,
+    //         0, 0, (zNear + zFar) * rangeInv, -1,
+    //         0, 0, zNear * zFar * rangeInv * 2, 0
+    //     ])
+    // }
 
     public projectMesh(mesh: Mesh): Mesh {
         const newMesh = [] as Tris[];
@@ -33,7 +46,7 @@ export class ProjMatrix extends Matrix4x4 {
     //     return newTris
     // }
     public projectTris(tris: Tris): Tris {
-        const newTris = tris.copy();;
+        const newTris = tris.copy();
         for (let i = 0; i < 3; i++) {
             newTris.vertexes[i] = this.projectVec(tris.vertexes[i]);
         }
