@@ -109,14 +109,17 @@ export class Tris {
         let p3 = this.p3.copy();
 
         let p1p2p3 = calc3dArea(p1, p2, p3)
-        let p1p2P = (calc3dArea(p1, p2, p) / p1p2p3)
-        let p2p3P = (calc3dArea(p2, p3, p) / p1p2p3)
-        let p3p1P = (calc3dArea(p3, p1, p) / p1p2p3)
+        let p1p2P = calc3dArea(p1, p2, p) / p1p2p3
+        let p2p3P = calc3dArea(p2, p3, p) / p1p2p3
+        let p3p1P = calc3dArea(p3, p1, p) / p1p2p3
 
-        return Vec2d.from(
-            this.p1tex.x * p2p3P + this.p2tex.x * p3p1P + this.p3tex.x * p1p2P,
-            this.p1tex.y * p2p3P + this.p2tex.y * p3p1P + this.p3tex.y * p1p2P,
+        let approximation = Vec2d.from(
+            (this.p1tex.x / this.p1.w) * p2p3P + (this.p2tex.x / this.p2.w) * p3p1P + (this.p3tex.x / this.p3.w) * p1p2P,
+            (this.p1tex.y / this.p1.w) * p2p3P + (this.p2tex.y / this.p2.w) * p3p1P + (this.p3tex.y / this.p3.w) * p1p2P,
+            (1 / this.p1.w) * p2p3P + (1 / this.p2.w) * p3p1P + (1 / this.p3.w) * p1p2P
         )
+
+        return Vec2d.from(approximation.x / approximation.w, approximation.y / approximation.w)
     }
 
 

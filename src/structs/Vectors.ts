@@ -103,8 +103,8 @@ export class Vec2d {
         this.d = d;
     }
 
-    public static from(x: number, y: number): Vec2d {
-        return new Vec2d([x, y, 1])
+    public static from(x: number, y: number, w?: number): Vec2d {
+        return new Vec2d([x, y, w ? w : 1])
     }
 
     public static empty(): Vec2d {
